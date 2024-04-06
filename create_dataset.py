@@ -47,13 +47,28 @@ def apply_background_segmentation(image_path):
     - image_path (Path): Path to the input image.
     """
     # Load the image in grayscale (assuming it's already in grayscale from previous steps)
-    image = cv2.imread(str(image_path), cv2.IMREAD_GRAYSCALE)
+    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
     
     # Apply Otsu's thresholding; returns (threshold used by the function which is computed automatically, thresholded image)
     _, segmented_image = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
     
     return segmented_image
     
+def resize_image(image_path, target_size=(48, 48)):
+    """
+    Resize images to a specified size for scale normalization.
+    
+    Args:
+    - image_path (Path): Path to the input image.
+    - target_size (tuple): The target size for the images, in pixels.
+    """
+    # Load the image
+    image = cv2.imread(image_path)
+    
+    # Resize the image
+    resized_image = cv2.resize(image, target_size, interpolation=cv2.INTER_AREA)
+    
+    return resized_image
 
 def process_images(input_folder, output_folder, select):
     """
@@ -72,6 +87,8 @@ def process_images(input_folder, output_folder, select):
                 corrected_image = apply_noise_reduction(img_path)
             elif select==2:
                 corrected_image = apply_background_segmentation(img_path)
+            elif select==3:
+                corrected_image = resize_image(img_path)
 
             # Save the corrected image
             output_image_path = os.path.join(output_folder, dir_, img)
@@ -90,10 +107,11 @@ DATA_DIR = './data'
 LIGHTING_CORRECTION = './preprocessing/lighting'
 NOISE_REDUCTION = './preprocessing/noise'
 BACKGROUND_SEGMENTATION = './preprocessing/background'
+RESIZE_IMAGE = './preprocessing/resize'
 process_images(DATA_DIR, LIGHTING_CORRECTION, 0)
 process_images(LIGHTING_CORRECTION, NOISE_REDUCTION, 1)
 process_images(NOISE_REDUCTION, BACKGROUND_SEGMENTATION, 2)
-
+process_images(BACKGROUND_SEGMENTATION, RESIZE_IMAGE, 3)
 #plt.show()
 
 
