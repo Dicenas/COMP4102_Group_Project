@@ -39,6 +39,22 @@ def apply_noise_reduction(image_path, kernel_size=(5, 5), sigma_x=0):
     
     return smoothed_image
 
+def apply_background_segmentation(image_path):
+    """
+    Apply background segmentation using Otsu's thresholding.
+    
+    Args:
+    - image_path (Path): Path to the input image.
+    """
+    # Load the image in grayscale (assuming it's already in grayscale from previous steps)
+    image = cv2.imread(str(image_path), cv2.IMREAD_GRAYSCALE)
+    
+    # Apply Otsu's thresholding; returns (threshold used by the function which is computed automatically, thresholded image)
+    _, segmented_image = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    
+    return segmented_image
+    
+
 def process_images(input_folder, output_folder, select):
     """
     Apply selected correction to all images in the input folder and save the processed images.
@@ -54,6 +70,8 @@ def process_images(input_folder, output_folder, select):
                 corrected_image = apply_lighting_correction(img_path)
             elif select==1:
                 corrected_image = apply_noise_reduction(img_path)
+            elif select==2:
+                corrected_image = apply_background_segmentation(img_path)
 
             # Save the corrected image
             output_image_path = os.path.join(output_folder, dir_, img)
@@ -71,8 +89,10 @@ def process_images(input_folder, output_folder, select):
 DATA_DIR = './data'
 LIGHTING_CORRECTION = './preprocessing/lighting'
 NOISE_REDUCTION = './preprocessing/noise'
+BACKGROUND_SEGMENTATION = './preprocessing/background'
 process_images(DATA_DIR, LIGHTING_CORRECTION, 0)
 process_images(LIGHTING_CORRECTION, NOISE_REDUCTION, 1)
+process_images(NOISE_REDUCTION, BACKGROUND_SEGMENTATION, 2)
 
 #plt.show()
 
