@@ -3,6 +3,7 @@ import os
 import mediapipe as mp
 import cv2
 import matplotlib.pyplot as plt
+import numpy as np
 
 def apply_lighting_correction(image_path):
     """
@@ -52,7 +53,40 @@ def apply_background_segmentation(image_path):
     # Apply Otsu's thresholding; returns (threshold used by the function which is computed automatically, thresholded image)
     _, segmented_image = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
     
+
+    #segmented_image = cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+    #segmented_image = cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2)
+
     return segmented_image
+
+def apply_edge_detection(image_path):
+    """
+    Segment the hand from the background using edge detection, morphological operations, and contour filling.
+    
+    Args:
+    - image_path (Path): Path to the input image.
+    - output_folder (Path): Folder to save the segmented images.
+    """
+    # Load the image and convert to grayscale
+    image = cv2.imread(image_path)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Step 1: Edge Detection
+    edges = cv2.Canny(gray, 25, 50)
+
+    # Step 2: Morphological Operations - Dilation
+    kernel = np.ones((5, 5), np.uint8)
+    dilated_edges = cv2.dilate(edges, kernel, iterations=1)
+
+    # Step 3: Find and Fill Contours
+    contours, _ = cv2.findContours(dilated_edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    hand_mask = np.zeros_like(gray)
+    cv2.drawContours(hand_mask, contours, -1, color=255, thickness=cv2.FILLED)
+
+    # Step 4: Apply the Mask
+    segmented_hand = cv2.bitwise_and(image, image, mask=hand_mask)
+
+    return segmented_hand
     
 def resize_image(image_path, target_size=(48, 48)):
     """
@@ -89,6 +123,8 @@ def process_images(input_folder, output_folder, select):
                 corrected_image = apply_background_segmentation(img_path)
             elif select==3:
                 corrected_image = resize_image(img_path)
+            elif select==4:
+                corrected_image = apply_edge_detection(img_path)
 
             # Save the corrected image
             output_image_path = os.path.join(output_folder, dir_, img)
@@ -103,15 +139,23 @@ def process_images(input_folder, output_folder, select):
                 print("Failed to save image.")
 
 
-DATA_DIR = './data'
+DATA_DIR = './background_data'
 LIGHTING_CORRECTION = './preprocessing/lighting'
 NOISE_REDUCTION = './preprocessing/noise'
 BACKGROUND_SEGMENTATION = './preprocessing/background'
 RESIZE_IMAGE = './preprocessing/resize'
+
+
 process_images(DATA_DIR, LIGHTING_CORRECTION, 0)
 process_images(LIGHTING_CORRECTION, NOISE_REDUCTION, 1)
 process_images(NOISE_REDUCTION, BACKGROUND_SEGMENTATION, 2)
 process_images(BACKGROUND_SEGMENTATION, RESIZE_IMAGE, 3)
+
+#process_images(DATA_DIR, './preprocessing/adaptive_gaussian_thresholding', 2)
+#process_images(DATA_DIR, './preprocessing/adaptive_mean_thresholding', 2)
+
+CANNY_SEGMENTATION = './preprocessing/canny'
+process_images(DATA_DIR, CANNY_SEGMENTATION, 4)
 #plt.show()
 
 
