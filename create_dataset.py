@@ -6,14 +6,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def apply_lighting_correction(image_path):
-    """
-    Apply histogram equalization to an image for lighting correction.
-    Args:
-    - image_path (str or Path): The path to the input image.
-    
-    Returns:
-    - corrected_image: The lighting-corrected image.
-    """
     # Load the image in grayscale mode
     image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
     
@@ -23,15 +15,6 @@ def apply_lighting_correction(image_path):
     return corrected_image
 
 def apply_noise_reduction(image_path, kernel_size=(5, 5), sigma_x=0):
-    """
-    Apply Gaussian blur for noise reduction.
-    
-    Args:
-    - image_path (Path): Path to the input image.
-    - output_folder (Path): Folder to save the noise-reduced images.
-    - kernel_size (tuple): The size of the Gaussian kernel. Larger kernel size means more blurring.
-    - sigma_x (float): Standard deviation in X direction for Gaussian kernel. If 0, it is calculated from the kernel size.
-    """
     # Load the image
     image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
     
@@ -41,12 +24,6 @@ def apply_noise_reduction(image_path, kernel_size=(5, 5), sigma_x=0):
     return smoothed_image
 
 def apply_background_segmentation(image_path):
-    """
-    Apply background segmentation using Otsu's thresholding.
-    
-    Args:
-    - image_path (Path): Path to the input image.
-    """
     # Load the image in grayscale (assuming it's already in grayscale from previous steps)
     image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
     
@@ -60,13 +37,6 @@ def apply_background_segmentation(image_path):
     return segmented_image
 
 def apply_edge_detection(image_path):
-    """
-    Segment the hand from the background using edge detection, morphological operations, and contour filling.
-    
-    Args:
-    - image_path (Path): Path to the input image.
-    - output_folder (Path): Folder to save the segmented images.
-    """
     # Load the image and convert to grayscale
     image = cv2.imread(image_path)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -89,13 +59,6 @@ def apply_edge_detection(image_path):
     return segmented_hand
     
 def resize_image(image_path, target_size=(48, 48)):
-    """
-    Resize images to a specified size for scale normalization.
-    
-    Args:
-    - image_path (Path): Path to the input image.
-    - target_size (tuple): The target size for the images, in pixels.
-    """
     # Load the image
     image = cv2.imread(image_path)
     
